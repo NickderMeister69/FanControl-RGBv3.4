@@ -1,0 +1,698 @@
+<Window x:Class="NickFanControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:NickFanControl"
+        Title="Nick Fan Control"
+        Width="1180" Height="780" MinWidth="760" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="CanResize"
+        Background="{StaticResource WindowBackground}"
+        Foreground="{StaticResource TextBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        Icon="pack://application:,,,/fan.ico"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="52" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Animiertes Lüfter-Symbol -->
+        <DataTemplate x:Key="FanIcon">
+            <Grid Width="100" Height="100" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform Angle="{Binding Angle}"/>
+                </Grid.RenderTransform>
+                <Path Data="{StaticResource BladeGeometry}" Fill="{Binding IconBrush}" Stretch="None"/>
+                <Path Data="{StaticResource BladeGeometry}" Fill="{Binding IconBrush}" Stretch="None">
+                    <Path.RenderTransform><RotateTransform Angle="72" CenterX="50" CenterY="50"/></Path.RenderTransform>
+                </Path>
+                <Path Data="{StaticResource BladeGeometry}" Fill="{Binding IconBrush}" Stretch="None">
+                    <Path.RenderTransform><RotateTransform Angle="144" CenterX="50" CenterY="50"/></Path.RenderTransform>
+                </Path>
+                <Path Data="{StaticResource BladeGeometry}" Fill="{Binding IconBrush}" Stretch="None">
+                    <Path.RenderTransform><RotateTransform Angle="216" CenterX="50" CenterY="50"/></Path.RenderTransform>
+                </Path>
+                <Path Data="{StaticResource BladeGeometry}" Fill="{Binding IconBrush}" Stretch="None">
+                    <Path.RenderTransform><RotateTransform Angle="288" CenterX="50" CenterY="50"/></Path.RenderTransform>
+                </Path>
+                <Ellipse Width="20" Height="20" Fill="#0E1116" Stroke="{Binding IconBrush}" StrokeThickness="2"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Farb-Chip mit Farbwähler -->
+        <DataTemplate x:Key="ColorChip" DataType="{x:Type local:ColorItem}">
+            <Grid Margin="0,0,8,8">
+                <ToggleButton x:Name="chip" Width="34" Height="34" Cursor="Hand" ToolTip="{Binding Hex}">
+                    <ToggleButton.Template>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Grid>
+                                <Ellipse x:Name="ring" Stroke="#3A4150" StrokeThickness="2"/>
+                                <Ellipse Margin="4" Fill="{Binding Brush}"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ring" Property="Stroke" Value="White"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="ring" Property="Stroke" Value="{StaticResource AccentBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </ToggleButton.Template>
+                </ToggleButton>
+                <Popup IsOpen="{Binding IsChecked, ElementName=chip, Mode=TwoWay}" StaysOpen="False" Placement="Bottom"
+                       PlacementTarget="{Binding ElementName=chip}" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Background="#1C2029" BorderBrush="#323846" BorderThickness="1" CornerRadius="12" Padding="14" Width="252" Margin="0,6,0,0">
+                        <StackPanel>
+                            <UniformGrid Columns="6">
+                                <UniformGrid.Resources>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Width" Value="32"/>
+                                        <Setter Property="Height" Value="32"/>
+                                        <Setter Property="Margin" Value="3"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="b" CornerRadius="16" Background="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                                            BorderBrush="#40FFFFFF" BorderThickness="1"/>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="b" Property="BorderBrush" Value="White"/>
+                                                            <Setter TargetName="b" Property="BorderThickness" Value="3"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </UniformGrid.Resources>
+                                <Button Tag="#FF0000" ToolTip="Rot" Click="Preset_Click"/>
+                                <Button Tag="#FF4000" ToolTip="Orange" Click="Preset_Click"/>
+                                <Button Tag="#FFB000" ToolTip="Gelb" Click="Preset_Click"/>
+                                <Button Tag="#00FF00" ToolTip="Grün" Click="Preset_Click"/>
+                                <Button Tag="#00FF80" ToolTip="Türkis" Click="Preset_Click"/>
+                                <Button Tag="#00FFFF" ToolTip="Cyan" Click="Preset_Click"/>
+                                <Button Tag="#0080FF" ToolTip="Hellblau" Click="Preset_Click"/>
+                                <Button Tag="#0000FF" ToolTip="Blau" Click="Preset_Click"/>
+                                <Button Tag="#8000FF" ToolTip="Lila" Click="Preset_Click"/>
+                                <Button Tag="#FF00FF" ToolTip="Magenta" Click="Preset_Click"/>
+                                <Button Tag="#FF0060" ToolTip="Pink" Click="Preset_Click"/>
+                                <Button Tag="#FFFFFF" ToolTip="Weiß" Click="Preset_Click"/>
+                            </UniformGrid>
+                            <TextBlock Text="Eigene Farbe" Style="{StaticResource Caption}" Margin="3,12,0,4"/>
+                            <Slider Style="{StaticResource ColorSlider}" Background="{StaticResource HueBrush}" Minimum="0" Maximum="360"
+                                    Value="{Binding Hue}" Margin="3,0"/>
+                            <Button Content="Farbe entfernen" Margin="3,12,3,0" Padding="10,5" Click="RemoveColor_Click"
+                                    Visibility="{Binding Owner.CanRemove, Converter={StaticResource BoolToVis}}"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Effekt-Einstellungen (für "alle Geräte" und für einzelne Lüfter) -->
+        <DataTemplate x:Key="EffectEditor" DataType="{x:Type local:EffectVM}">
+            <StackPanel>
+                <Border Background="#0F1217" BorderBrush="#262B35" BorderThickness="1" CornerRadius="10" Padding="3">
+                    <UniformGrid Columns="3">
+                        <RadioButton Style="{StaticResource Segment}" Content="Statisch" IsChecked="{Binding IsStatic}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Diashow" IsChecked="{Binding IsSlideshow}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Regenbogen" IsChecked="{Binding IsRainbow}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Atmen" IsChecked="{Binding IsBreathing}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Bildschirm" IsChecked="{Binding IsScreen}"
+                                     ToolTip="Reaktiv: Farben passen sich an das an, was auf dem Bildschirm läuft"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Aus" IsChecked="{Binding IsOff}"/>
+                    </UniformGrid>
+                </Border>
+                <TextBlock Text="{Binding Description}" Style="{StaticResource Caption}" Margin="2,8,0,0" TextWrapping="Wrap"/>
+
+                <!-- Farben -->
+                <StackPanel Visibility="{Binding ShowColors, Converter={StaticResource BoolToVis}}" Margin="0,12,0,0">
+                    <TextBlock Text="Farben" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,8"/>
+                    <WrapPanel>
+                        <ItemsControl ItemsSource="{Binding VisibleColors}" ItemTemplate="{StaticResource ColorChip}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <Button Width="34" Height="34" Padding="0" Margin="0,0,8,8" Content="+" FontSize="18"
+                                Visibility="{Binding ShowAddColor, Converter={StaticResource BoolToVis}}" Click="AddColor_Click"
+                                ToolTip="Farbe hinzufügen"/>
+                    </WrapPanel>
+                </StackPanel>
+
+                <!-- Dauer -->
+                <Grid Margin="0,6,0,0" Visibility="{Binding ShowSeconds, Converter={StaticResource BoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding SecondsLabel}" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Minimum="0.5" Maximum="30" Value="{Binding Seconds}" Margin="8,0" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="{Binding SecondsText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+                <CheckBox Style="{StaticResource ToggleSwitch}" Content="Weich überblenden" IsChecked="{Binding Fade}" Margin="0,12,0,0"
+                          Visibility="{Binding ShowFade, Converter={StaticResource BoolToVis}}"/>
+
+                <!-- Regenbogen -->
+                <StackPanel Visibility="{Binding ShowRainbow, Converter={StaticResource BoolToVis}}" Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Tempo" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="0.1" Maximum="5" Value="{Binding Speed}" Margin="8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="{Binding SpeedText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                    <CheckBox Style="{StaticResource ToggleSwitch}" Content="Als Welle über die LEDs" IsChecked="{Binding Wave}" Margin="0,12,0,0"/>
+                </StackPanel>
+
+                <!-- Bildschirm -->
+                <StackPanel Visibility="{Binding ShowScreen, Converter={StaticResource BoolToVis}}" Margin="0,12,0,0">
+                    <!-- Live-Vorschau: so sieht die App gerade deinen Bildschirm -->
+                    <Border Width="224" Height="126" HorizontalAlignment="Left" CornerRadius="8" BorderBrush="#40FFFFFF" BorderThickness="2"
+                            Margin="0,0,0,12" ClipToBounds="True"
+                            DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                            ToolTip="Live: die Farben, die die App gerade auf deinem Bildschirm erkennt">
+                        <Grid Background="{Binding ScreenAll}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.RowSpan="3" Background="{Binding ScreenLeft}"/>
+                            <Border Grid.Column="2" Grid.RowSpan="3" Background="{Binding ScreenRight}"/>
+                            <Border Grid.Column="1" Background="{Binding ScreenTop}"/>
+                            <Border Grid.Column="1" Grid.Row="2" Background="{Binding ScreenBottom}"/>
+                            <Border Grid.Column="1" Grid.Row="1" Background="{Binding ScreenCenter}" CornerRadius="4" Margin="4"/>
+                        </Grid>
+                    </Border>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Bereich" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Column="1" Style="{StaticResource DarkCombo}" Margin="8,0,0,0"
+                                  ItemsSource="{x:Static local:EffectVM.RegionNames}" SelectedIndex="{Binding RegionIndex}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Intensität" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="50" Maximum="250" Value="{Binding Boost}" Margin="8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="{Binding BoostText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Reaktion" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                        <Slider Grid.Column="1" Minimum="3" Maximum="100" Value="{Binding Reaction}" Margin="8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="{Binding ReactionText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,8,0,0"
+                               Text="Wie bei SignalRGB: Jeder Anschluss kann rechts unter „Geräte“ einen eigenen Bildschirmbereich bekommen (z. B. linke Lüfter = linke Bildseite). Dunkle Szenen bleiben dunkel, kräftige Farben werden betont."/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder" BorderBrush="#262B35" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ================= Titelleiste ================= -->
+            <Grid Grid.Row="0" Margin="18,0,8,0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="30" Height="30" CornerRadius="9">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#38BDF8" Offset="0"/>
+                                <GradientStop Color="#6366F1" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Viewbox Margin="4">
+                            <ContentControl Content="{Binding LogoFan, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            ContentTemplate="{StaticResource FanIcon}"/>
+                        </Viewbox>
+                    </Border>
+                    <TextBlock Text="Fan Control" FontFamily="{StaticResource DisplayFont}" FontSize="16" FontWeight="SemiBold"
+                               Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Version}" Style="{StaticResource Caption}" Margin="8,2,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="#0F1217" BorderBrush="#262B35"
+                        BorderThickness="1" CornerRadius="10" Padding="3" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="NavFans" Style="{StaticResource Segment}" Width="120" IsChecked="True"
+                                     Checked="Nav_Checked" WindowChrome.IsHitTestVisibleInChrome="True">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE9CA;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Lüfter" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavLights" Style="{StaticResource Segment}" Width="140"
+                                     Checked="Nav_Checked" WindowChrome.IsHitTestVisibleInChrome="True">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE790;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Beleuchtung" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Autostart}" Content="Mit Windows starten"
+                              Margin="0,0,16,0" VerticalAlignment="Center" WindowChrome.IsHitTestVisibleInChrome="True"
+                              ToolTip="Startet die App nach dem Anmelden automatisch – nur als Symbol unten rechts in der Taskleiste"/>
+                    <Border CornerRadius="13" Padding="12,5" Background="#14FFFFFF" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="{Binding StateBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding StateText}" Margin="8,0,0,0" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Style="{StaticResource TitleButton}" Content="&#xE921;" Click="Minimize_Click"
+                            WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Minimieren"/>
+                    <Button Style="{StaticResource TitleButton}" Content="&#xE922;" Click="Maximize_Click"
+                            WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="Maximieren"/>
+                    <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" Click="Close_Click"
+                            WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="In die Taskleiste minimieren"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- ================= Inhalt ================= -->
+            <ScrollViewer x:Name="FansPage" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10,0,10,10">
+                <StackPanel>
+
+                    <!-- Kopf: Temperaturen + Status -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.6*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Style="{StaticResource Card}" Grid.Column="0">
+                            <StackPanel>
+                                <TextBlock Text="PROZESSOR" Style="{StaticResource Caption}" FontWeight="SemiBold"/>
+                                <local:Gauge Value="{Binding CpuTemp}" Label="CPU-Temperatur" Width="150" Height="150" Margin="0,8,0,0"
+                                             Max="100" WarnAt="70" DangerAt="{Binding SafetyTemp}"/>
+                                <ComboBox Style="{StaticResource DarkCombo}" Margin="0,10,0,0" ItemsSource="{Binding CpuSources}"
+                                          SelectedItem="{Binding CpuSource}" ToolTip="Welcher Sensor angezeigt und für die Sicherheitsgrenze genutzt wird"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Grid.Column="1">
+                            <StackPanel>
+                                <TextBlock Text="GRAFIKKARTE" Style="{StaticResource Caption}" FontWeight="SemiBold"/>
+                                <local:Gauge Value="{Binding GpuTemp}" Label="GPU-Temperatur" Width="150" Height="150" Margin="0,8,0,0"
+                                             Max="100" WarnAt="70" DangerAt="{Binding SafetyTemp}"/>
+                                <ComboBox Style="{StaticResource DarkCombo}" Margin="0,10,0,0" ItemsSource="{Binding GpuSources}"
+                                          SelectedItem="{Binding GpuSource}" ToolTip="Welcher Sensor angezeigt und für die Sicherheitsgrenze genutzt wird"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" Grid.Column="2">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="STATUS" Style="{StaticResource Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="1" Text="{Binding StateText}" Foreground="{Binding StateBrush}"
+                                           FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                                <TextBlock Grid.Row="2" Text="{Binding Summary}" Foreground="{StaticResource MutedBrush}" FontSize="14" Margin="0,2,0,0"/>
+
+                                <StackPanel Grid.Row="3" Margin="0,18,0,0">
+                                    <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Paused}"
+                                              Content="Pausieren – alle Lüfter regelt das BIOS"/>
+                                    <Grid Margin="0,16,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="128"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="56"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Alle Lüfter schneller ab" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"
+                                                   TextWrapping="Wrap"
+                                                   ToolTip="Ab dieser CPU-/GPU-Temperatur drehen auch die Lüfter auf „Minimum“ stufenlos hoch – bis 100 % an der Sicherheitsgrenze."/>
+                                        <Slider Grid.Column="1" Minimum="40" Maximum="90" Value="{Binding RampTemp}"
+                                                IsSnapToTickEnabled="True" TickFrequency="1" Margin="14,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding RampText}" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Grid Margin="0,12,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="128"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="56"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Sicherheitsgrenze" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"
+                                                   ToolTip="Ab dieser CPU-/GPU-Temperatur übernimmt das BIOS alle Lüfter (10 °C darunter wieder die App)."/>
+                                        <Slider Grid.Column="1" Minimum="60" Maximum="100" Value="{Binding SafetyTemp}"
+                                                IsSnapToTickEnabled="True" TickFrequency="1" Margin="14,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding SafetyText}" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,18,0,0">
+                                    <Button Style="{StaticResource AccentButton}" Content="Alle neu kalibrieren"
+                                            IsEnabled="{Binding CanCalibrateAll}" Click="CalibrateAll_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Hinweis: keine Lüfter -->
+                    <Border Style="{StaticResource Card}" Visibility="{Binding NoFans, Converter={StaticResource BoolToVis}}"
+                            Background="#2A1F12" BorderBrush="#5C4013">
+                        <StackPanel>
+                            <TextBlock Text="Keine steuerbaren Lüfter gefunden" FontFamily="{StaticResource DisplayFont}"
+                                       FontSize="18" FontWeight="SemiBold" Foreground="#FBBF24"/>
+                            <TextBlock Text="{Binding BannerText}" TextWrapping="Wrap" Margin="0,8,0,0" FontSize="14"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <Button Style="{StaticResource AccentButton}" Content="PawnIO herunterladen" Click="PawnIo_Click"/>
+                                <Button Content="App neu starten" Margin="10,0,0,0" Click="Restart_Click"/>
+                                <Button Content="Log-Ordner öffnen" Margin="10,0,0,0" Click="Log_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Überschrift Lüfter -->
+                    <DockPanel Margin="10,16,10,2">
+                        <TextBlock Text="Lüfter" FontFamily="{StaticResource DisplayFont}" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="Name anklicken zum Umbenennen · „Identifizieren“ lässt den Lüfter 4 s voll drehen"
+                                   Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                    </DockPanel>
+
+                    <!-- Lüfter-Karten -->
+                    <ItemsControl ItemsSource="{Binding Fans}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:FanVM}">
+                                <Border Style="{StaticResource Card}" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Symbol -->
+                                        <Grid Width="86" Height="86" VerticalAlignment="Top" Margin="0,2,18,0">
+                                            <Ellipse Fill="#0F1217" Stroke="#2A303B" StrokeThickness="1"/>
+                                            <Ellipse Margin="6" StrokeThickness="2" Stroke="{Binding IconBrush}" Opacity="0.25"/>
+                                            <Viewbox Margin="12">
+                                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource FanIcon}"/>
+                                            </Viewbox>
+                                        </Grid>
+
+                                        <StackPanel Grid.Column="1">
+                                            <!-- Name + Drehzahl -->
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBox Style="{StaticResource InlineEdit}" MinWidth="80" MaxWidth="240"
+                                                                 Text="{Binding DisplayName, UpdateSourceTrigger=LostFocus}"
+                                                                 KeyDown="Name_KeyDown" GotKeyboardFocus="Name_GotFocus"/>
+                                                        <Button Style="{StaticResource TitleButton}" Width="28" Height="26" FontSize="12"
+                                                                Content="&#xE70F;" Margin="6,0,0,0" ToolTip="Umbenennen (Enter = speichern, Esc = abbrechen, leer = Originalname)"
+                                                                Click="Rename_Click"/>
+                                                    </StackPanel>
+                                                    <TextBlock Style="{StaticResource Caption}" Margin="0,3,0,0">
+                                                        <Run Text="{Binding OriginalNameText, Mode=OneWay}"/>
+                                                        <Run Text="{Binding Chip, Mode=OneWay}"/>
+                                                        <Run Text=" · "/>
+                                                        <Run Text="{Binding PercentText, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" HorizontalAlignment="Right" Margin="12,0,0,0">
+                                                    <TextBlock Text="{Binding RpmText}" FontFamily="{StaticResource DisplayFont}" FontSize="28"
+                                                               FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="U/min" Style="{StaticResource Caption}" HorizontalAlignment="Right" Margin="0,-4,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Modus -->
+                                            <Border Background="#0F1217" BorderBrush="#262B35" BorderThickness="1" CornerRadius="10"
+                                                    Padding="3" Margin="0,14,0,0" IsEnabled="{Binding ModeEnabled}">
+                                                <UniformGrid Columns="5">
+                                                    <RadioButton Style="{StaticResource Segment}" Content="Minimum"
+                                                                 IsChecked="{Binding IsMinimum}"
+                                                                 ToolTip="Leiseste Stufe, bei der der Lüfter noch dreht (wird kalibriert)"/>
+                                                    <RadioButton Style="{StaticResource Segment}" Content="Manuell"
+                                                                 IsChecked="{Binding IsManual}"
+                                                                 ToolTip="Feste Leistung in Prozent – mit dem Regler darunter einstellen"/>
+                                                    <RadioButton Style="{StaticResource Segment}" Content="Temperatur"
+                                                                 IsChecked="{Binding IsCurve}" Padding="4,7"
+                                                                 ToolTip="Die App regelt nach der CPU-Temperatur: kühl = leise, warm = schneller. Ideal für den CPU-Lüfter."/>
+                                                    <RadioButton Style="{StaticResource Segment}" Content="Pumpe"
+                                                                 IsChecked="{Binding IsPump}"
+                                                                 ToolTip="Wasserkühlungs-Pumpe: feste Leistung (Standard 30 %)"/>
+                                                    <RadioButton Style="{StaticResource Segment}" Content="BIOS"
+                                                                 IsChecked="{Binding IsAuto}"
+                                                                 ToolTip="Mainboard regelt selbst – z. B. für den CPU-Lüfter"/>
+                                                </UniformGrid>
+                                            </Border>
+
+                                            <!-- Minimum -->
+                                            <Grid Margin="0,14,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="44"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding SliderLabel}" Width="62" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                                <Slider Grid.Column="1" Minimum="0" Maximum="100" Margin="12,0"
+                                                        Value="{Binding SliderValue}" IsEnabled="{Binding MinEnabled}"
+                                                        IsSnapToTickEnabled="True" TickFrequency="1" SmallChange="1" LargeChange="5"
+                                                        VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding SliderText}" FontWeight="SemiBold"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+
+                                            <!-- Temperatur-Kurve -->
+                                            <StackPanel Visibility="{Binding IsCurve, Converter={StaticResource BoolToVis}}">
+                                                <Grid Margin="0,10,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="52"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Leise bis" Width="62" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Minimum="30" Maximum="85" Margin="12,0" Value="{Binding CurveLow}"
+                                                            IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding CurveLowText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                                <Grid Margin="0,10,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="52"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Voll ab" Width="62" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Minimum="40" Maximum="95" Margin="12,0" Value="{Binding CurveHigh}"
+                                                            IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding CurveHighText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <!-- Fortschritt -->
+                                            <ProgressBar Margin="0,12,0,0" Maximum="1" Value="{Binding Progress}"
+                                                         Visibility="{Binding ShowProgress, Converter={StaticResource BoolToVis}}"/>
+
+                                            <!-- Status + Aktionen -->
+                                            <Grid Margin="0,14,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Ellipse Width="8" Height="8" Fill="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" Margin="8,0,0,0"
+                                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" MaxWidth="260"
+                                                               ToolTip="{Binding Status}"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <Button Content="Identifizieren" Click="Identify_Click" Padding="12,6"/>
+                                                    <Button Content="Kalibrieren" Click="Calibrate_Click" Padding="12,6" Margin="8,0,0,0"
+                                                            IsEnabled="{Binding CanCalibrate}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Einstellungen -->
+                    <Border Style="{StaticResource Card}" Margin="8,16,8,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Autostart}"
+                                          Content="Beim Anmelden automatisch starten – nur als Symbol in der Taskleiste"/>
+                                <TextBlock Style="{StaticResource Caption}" Margin="54,4,0,0" TextWrapping="Wrap"
+                                           Text="Das Fenster schließt sich ins Tray (unten rechts). Beenden per Rechtsklick auf das Symbol – dann übernimmt wieder das BIOS."/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="Sensorliste öffnen" Click="Sensors_Click"
+                                        ToolTip="Alle Temperatur- und Lüftersensoren mit aktuellen Werten (zum Vergleich mit HWiNFO)"/>
+                                <Button Content="Log-Ordner öffnen" Margin="8,0,0,0" Click="Log_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ================= Beleuchtung ================= -->
+            <ScrollViewer x:Name="LightsPage" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled" Padding="10,0,10,10" DataContext="{Binding Rgb}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.4*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Effekt für alles -->
+                    <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="Beleuchtung" FontFamily="{StaticResource DisplayFont}" FontSize="20" FontWeight="SemiBold"/>
+                                <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Enabled}" Content="An"
+                                          HorizontalAlignment="Right" VerticalAlignment="Center"
+                                          ToolTip="Aus: die App lässt die Beleuchtung in Ruhe"/>
+                            </Grid>
+                            <TextBlock Text="Alle Lüfter und Geräte leuchten gleich." Style="{StaticResource Caption}" Margin="0,4,0,0"/>
+                            <Border Height="18" CornerRadius="9" Margin="0,14,0,0" Background="{Binding GlobalPreview}"
+                                    BorderBrush="#30FFFFFF" BorderThickness="1" ToolTip="Live-Vorschau"/>
+
+                            <Grid Margin="0,16,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Helligkeit" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Slider Grid.Column="1" Minimum="5" Maximum="100" Value="{Binding Brightness}" Margin="8,0" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="{Binding BrightnessText}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <ContentControl Content="{Binding Global}" ContentTemplate="{StaticResource EffectEditor}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Geräte -->
+                    <Border Style="{StaticResource Card}" Grid.Column="1" VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="GERÄTE" Style="{StaticResource Caption}" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Ellipse Width="8" Height="8" Fill="{Binding StatusBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding StatusText}" Margin="8,0,0,0" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                            </StackPanel>
+
+                            <ItemsControl ItemsSource="{Binding Zones}" Margin="0,10,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:LightZoneVM}">
+                                        <Border Background="#0F1217" BorderBrush="#232833" BorderThickness="1" CornerRadius="10" Padding="10,8" Margin="0,4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Ellipse Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                         Fill="{Binding Fans[0].Preview}" Stroke="#30FFFFFF"/>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBox Style="{StaticResource InlineEdit}" FontSize="14" HorizontalAlignment="Left" MinWidth="60" MaxWidth="220"
+                                                             Text="{Binding DisplayName, UpdateSourceTrigger=LostFocus}" KeyDown="Name_KeyDown"
+                                                             GotKeyboardFocus="Name_GotFocus"/>
+                                                    <TextBlock Text="{Binding SubTitle}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis"/>
+                                                    <ComboBox Style="{StaticResource DarkCombo}" Margin="0,6,0,0" HorizontalAlignment="Left" MinWidth="170"
+                                                              ItemsSource="{x:Static local:LightZoneVM.ScreenRegionChoices}" SelectedIndex="{Binding ScreenRegionIndex}"
+                                                              Visibility="{Binding ShowScreenRegion, Converter={StaticResource BoolToVis}}"
+                                                              ToolTip="Welcher Teil des Bildschirms auf diesem Anschluss leuchtet – z. B. linke Lüfter = linke Bildseite"/>
+                                                </StackPanel>
+                                                <CheckBox Grid.Column="2" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Enabled}"
+                                                          VerticalAlignment="Center" ToolTip="Diesen Anschluss / dieses Gerät beleuchten"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Visibility="{Binding NoZones, Converter={StaticResource BoolToVis}}" TextWrapping="Wrap" Margin="0,10,0,0"
+                                       Foreground="{StaticResource MutedBrush}"
+                                       Text="Noch keine steuerbare Beleuchtung gefunden. „Hardware-Liste“ zeigt, was erkannt wurde."/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <Button Style="{StaticResource AccentButton}" Content="Neu suchen" Click="Rescan_Click"
+                                        ToolTip="Nach RGB-Geräten suchen (z. B. nach dem Anstecken)"/>
+                                <Button Content="Hardware-Liste" Margin="8,0,0,0" Click="Hardware_Click"/>
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,12,0,0"
+                                       Text="Kein Zusatzprogramm nötig. Andere RGB-Programme (Synapse, RGB Fusion, iCUE …) am besten schließen."/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- ================= Willkommen-Overlay ================= -->
+            <Grid Grid.RowSpan="2" Visibility="{Binding ShowWelcome, Converter={StaticResource BoolToVis}}">
+                <Border Style="{StaticResource Card}" Width="520" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="26"
+                        Margin="24" BorderBrush="{StaticResource AccentBrush}" BorderThickness="2">
+                    <StackPanel>
+                        <TextBlock Text="Erst Lüfter zuordnen" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="SemiBold"/>
+                        <TextBlock TextWrapping="Wrap" Margin="0,14,0,0" FontSize="14" LineHeight="22" Foreground="#C9CED8">
+                            <Run FontWeight="SemiBold" Foreground="White">1. Lüfter zuordnen – wichtig!</Run>
+                            <Run>Heißen die Lüfter nur „Fan #1, #2 …“, weiß die App nicht, welcher der CPU-Lüfter ist. Deshalb stehen erst einmal alle auf „BIOS“. Bei den meisten Mainboards (z. B. Gigabyte) ist </Run><Run FontWeight="SemiBold" Foreground="White">Fan #1 der CPU-Lüfter</Run><Run> – der bleibt auf „BIOS“. Mit „Identifizieren“ dreht ein Lüfter 4 Sekunden voll auf, dann hörst du, welcher es ist. Gehäuselüfter → „Minimum“, Wasserkühlungs-Pumpe → „Pumpe“.</Run>
+                            <LineBreak/><LineBreak/>
+                            <Run FontWeight="SemiBold" Foreground="White">2. Kalibrierung.</Run>
+                            <Run>Erst nachdem du auf „Fertig“ klickst, misst die App bei jedem Minimum-Lüfter die leiseste Stufe, bei der er noch dreht (+ 5 % Reserve).</Run>
+                            <LineBreak/><LineBreak/>
+                            <Run FontWeight="SemiBold" Foreground="White">3. Sicherheit.</Run>
+                            <Run>Ab 70 °C drehen Minimum-Lüfter stufenlos schneller, an der Sicherheitsgrenze laufen alle geregelten Lüfter auf 100 %.</Run>
+                        </TextBlock>
+                        <Button Style="{StaticResource AccentButton}" Content="Fertig – Lüfter sind zugeordnet" HorizontalAlignment="Right"
+                                Margin="0,22,0,0" Padding="22,9" Click="Welcome_Click"
+                                ToolTip="Du kannst die Modi danach jederzeit ändern"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
