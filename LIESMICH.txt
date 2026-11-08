@@ -1,4 +1,4 @@
-NICK FAN CONTROL v3.6.2
+NICK FAN CONTROL v3.7
 =====================
 
 EINMALIG VORHER

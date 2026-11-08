@@ -23,6 +23,18 @@ public sealed class FanController : ObservableObject, IDisposable
     private bool _disposed;
 
     public ObservableCollection<FanVM> Fans { get; } = new();
+    /// <summary>Nur die Anschlüsse, an denen wirklich ein Lüfter hängt (oder die der Nutzer eingestellt hat).</summary>
+    public ObservableCollection<FanVM> VisibleFans { get; } = new();
+
+    public bool ShowEmptyFans
+    {
+        get => _cfg.ShowEmptyFans;
+        set { _cfg.ShowEmptyFans = value; _cfg.Save(); Raise(); UpdateState(); }
+    }
+
+    private int _hiddenFans;
+    public int HiddenFans { get => _hiddenFans; private set { if (Set(ref _hiddenFans, value)) Raise(nameof(HiddenText)); } }
+    public string HiddenText => _hiddenFans == 0 ? "" : $"{_hiddenFans} leere Anschlüsse ausgeblendet";
 
     /// <summary>Titel, Text, Warnung? → Tray-Benachrichtigung</summary>
     public event Action<string, string, bool>? Notify;
@@ -192,7 +204,7 @@ public sealed class FanController : ObservableObject, IDisposable
     private bool _showWelcome;
     public bool ShowWelcome { get => _showWelcome; private set => Set(ref _showWelcome, value); }
 
-    public string Version => "v3.6.2";
+    public string Version => "v3.7";
 
     // ------------------------------------------------------------------ Start / Ende
 
@@ -492,11 +504,22 @@ public sealed class FanController : ObservableObject, IDisposable
         else if (Calibrating) { StateText = "Kalibriert …"; StateBrush = Palette.Accent; }
         else { StateText = "Aktiv"; StateBrush = Palette.Good; }
 
-        int quiet = Fans.Count(f => f.Ch.SoftwareActive && !f.Ch.Busy && f.S.Mode == FanMode.Minimum);
-        int fanCount = Fans.Count(f => f.S.Mode is FanMode.Minimum or FanMode.Auto);
-        int pumps = Fans.Count(f => f.S.Mode == FanMode.Pump);
-        Summary = Fans.Count == 0 ? "Keine steuerbaren Lüfter"
-                : $"{quiet} von {fanCount} Lüftern leise" + (pumps > 0 ? $" · {pumps} Pumpe{(pumps > 1 ? "n" : "")} auf festem Wert" : "");
+        // Anschlüsse ohne Lüfter ausblenden
+        foreach (var f in Fans)
+            if (!f.Ch.SeenSpinning && f.Ch.Rpm is float r && r > 100) f.Ch.SeenSpinning = true;
+        var visible = Fans.Where(f => _cfg.ShowEmptyFans || f.Ch.SeenSpinning || f.Ch.Busy).ToList();
+        if (!visible.SequenceEqual(VisibleFans))
+        {
+            VisibleFans.Clear();
+            foreach (var f in visible) VisibleFans.Add(f);
+        }
+        HiddenFans = Fans.Count - visible.Count;
+
+        int quiet = visible.Count(f => f.Ch.SoftwareActive && !f.Ch.Busy && f.S.Mode == FanMode.Minimum);
+        int fanCount = visible.Count(f => f.S.Mode != FanMode.Pump);
+        int pumps = visible.Count(f => f.S.Mode == FanMode.Pump);
+        Summary = visible.Count == 0 ? "Keine Lüfter gefunden"
+                : $"{fanCount} Lüfter · {quiet} leise geregelt" + (pumps > 0 ? $" · {pumps} Pumpe{(pumps > 1 ? "n" : "")} auf festem Wert" : "");
 
         foreach (var f in Fans)
         {

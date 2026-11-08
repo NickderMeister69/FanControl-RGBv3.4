@@ -521,7 +521,7 @@ public sealed class RgbController : ObservableObject, IDisposable
             else
             {
                 zc.FanCount = 1;
-                if (d.Adjustable) zc.LedCount = Math.Min(d.MaxLeds, 120);
+                if (d.Adjustable) zc.LedCount = Math.Min(d.MaxLeds, 60); // reicht für 3–4 Lüfter, schont den Controller
             }
             var vm = new LightZoneVM(this, d, zc, isNew && false);
             if ((d.Adjustable || vm.IsHub) && vm.LedCount != d.LedCount) _engine.SetLedCount(d.Zone, vm.LedCount);

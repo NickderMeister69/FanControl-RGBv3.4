@@ -408,8 +408,14 @@
                                    Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
                     </DockPanel>
 
+                    <StackPanel Orientation="Horizontal" Margin="10,6,10,0">
+                        <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding ShowEmptyFans}" Content="Leere Anschlüsse anzeigen"
+                                  ToolTip="Auch Anschlüsse anzeigen, an denen kein Lüfter erkannt wurde"/>
+                        <TextBlock Text="{Binding HiddenText}" Style="{StaticResource Caption}" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
                     <!-- Lüfter-Karten -->
-                    <ItemsControl ItemsSource="{Binding Fans}">
+                    <ItemsControl ItemsSource="{Binding VisibleFans}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <WrapPanel Orientation="Horizontal"/>

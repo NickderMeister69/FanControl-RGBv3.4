@@ -162,7 +162,7 @@ public sealed class GigabyteFusionDevice : RgbDevice
     private readonly Dictionary<int, int[]> _order = new(); // Header → Position von R, G, B
     private uint _effectMask;
     private bool _effectsChanged;
-    public override int MinIntervalMs => 40;
+    public override int MinIntervalMs => 50;
 
     public GigabyteFusionDevice(HidDevice hid, string board)
     {

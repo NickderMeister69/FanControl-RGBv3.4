@@ -21,6 +21,9 @@ public sealed class RazerDevice : RgbDevice
         Name = e.Name;
         Vendor = "Razer";
         Key = $"razer:{hid.Info.Pid:X4}:{hid.Info.Serial}";
+        // Mäuse, Mauspads & Co. (eine LED-Reihe): einfache Einzelfarbe ist bei allen Modellen zuverlässig.
+        // Nur Tastaturen bekommen Einzel-LED-Frames.
+        _staticFallback = e.Rows <= 1;
         int cols = Math.Max(1, e.Cols);
         Zones.Add(new RgbZone
         {
@@ -100,6 +103,7 @@ public sealed class RazerDevice : RgbDevice
                         break;
                 }
                 Send(rep);
+                Thread.Sleep(1);
             }
             if (_e.Proto == RazerProto.Linear) break;
         }

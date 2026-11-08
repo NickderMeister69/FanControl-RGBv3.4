@@ -25,6 +25,8 @@ public sealed class FanChannel
     public DateTime TargetSince { get; set; }
     public string Status { get; set; } = "";
     public int StallTicks { get; set; }
+    /// <summary>true, sobald an diesem Anschluss einmal eine Drehzahl gemessen wurde (= Lüfter angeschlossen).</summary>
+    public bool SeenSpinning { get; set; }
 }
 
 public sealed class FanManager : IDisposable

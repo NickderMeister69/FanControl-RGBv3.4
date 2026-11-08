@@ -182,7 +182,12 @@ public sealed class RgbEngine : IDisposable
         var now = DateTime.Now;
         foreach (var dev in _devices)
         {
-            if (_errors.TryGetValue(dev, out var errs) && errs >= 5) continue; // Gerät hängt → auslassen
+            if (_errors.TryGetValue(dev, out var errs) && errs >= 5)
+            {
+                // Gerät hat mehrfach nicht reagiert → 15 s Pause, dann neuer Versuch
+                if ((now - dev.LastUpdate).TotalSeconds < 15) continue;
+                _errors[dev] = 3;
+            }
             if ((now - dev.LastUpdate).TotalMilliseconds < dev.MinIntervalMs) continue;
 
             bool any = false;
@@ -209,6 +214,19 @@ public sealed class RgbEngine : IDisposable
                     bool changed = z.LastSent == null || !buf.AsSpan().SequenceEqual(z.LastSent);
                     // Regelmäßig erneut senden, damit andere Programme die Farben nicht übernehmen
                     bool keepAlive = dev.KeepAliveSeconds > 0 && (now - z.LastSendTime).TotalSeconds > dev.KeepAliveSeconds;
+                    // Anschlüsse mit nur einer Farbe (12-V-RGB, MSI, ASRock …) setzen bei jedem Befehl ihren Effekt neu.
+                    // Bei animierten Effekten deshalb höchstens ~8× pro Sekunde und nur bei sichtbarer Änderung –
+                    // sonst kommt der Controller nicht hinterher und zeigt nichts an.
+                    if (changed && !keepAlive && z.LastSent != null && (!z.Target.PerLed || leds == 1))
+                    {
+                        if ((now - z.LastSendTime).TotalMilliseconds < 125) changed = false;
+                        else
+                        {
+                            int diff = 0;
+                            for (int k = 0; k < buf.Length && k < z.LastSent.Length; k++) diff = Math.Max(diff, Math.Abs(buf[k] - z.LastSent[k]));
+                            if (diff < 3) changed = false;
+                        }
+                    }
                     if (changed || keepAlive)
                     {
                         dev.SetZone(z.Target, buf);

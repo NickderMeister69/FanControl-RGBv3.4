@@ -50,6 +50,8 @@ public sealed class AppConfig
     public int ConfigVersion { get; set; }
     /// <summary>Erst wenn der Nutzer die Lüfter zugeordnet hat, wird automatisch kalibriert.</summary>
     public bool FanSetupConfirmed { get; set; }
+    /// <summary>Auch Anschlüsse ohne Lüfter anzeigen.</summary>
+    public bool ShowEmptyFans { get; set; }
     /// <summary>Gewählter Sensor für die CPU-Anzeige (null = automatisch: Ø P-Kerne).</summary>
     public string? CpuSensorId { get; set; }
     /// <summary>Gewählter Sensor für die GPU-Anzeige (null = automatisch: GPU Core).</summary>
