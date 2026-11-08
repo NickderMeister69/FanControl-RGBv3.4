@@ -452,7 +452,7 @@ public sealed class RgbController : ObservableObject, IDisposable
     {
         ("ArmouryCrate", "ASUS Armoury Crate"), ("ArmouryCrate.Service", "ASUS Armoury Crate"), ("LightingService", "ASUS Aura"),
         ("AuraService", "ASUS Aura"), ("MSI.CentralServer", "MSI Center"), ("MSI_Center", "MSI Center"), ("MysticLight", "MSI Mystic Light"),
-        ("LEDKeeper2", "MSI Mystic Light"), ("RGBFusion", "Gigabyte RGB Fusion"), ("GCC", "Gigabyte Control Center"),
+        ("LEDKeeper2", "MSI Mystic Light"), ("RGBFusion", "Gigabyte RGB Fusion"),
         ("GigabyteUpdateService", "Gigabyte Control Center"), ("iCUE", "Corsair iCUE"), ("Corsair.Service", "Corsair iCUE"),
         ("RazerCentralService", "Razer Synapse"), ("Razer Synapse 3", "Razer Synapse"), ("RazerAppEngine", "Razer Synapse"),
         ("SignalRgb", "SignalRGB"), ("SignalRgbLauncher", "SignalRGB"), ("OpenRGB", "OpenRGB"), ("NZXT CAM", "NZXT CAM"),
@@ -464,17 +464,40 @@ public sealed class RgbController : ObservableObject, IDisposable
     public string ConflictText { get => _conflictText; private set { if (Set(ref _conflictText, value)) Raise(nameof(HasConflict)); } }
     public bool HasConflict => _conflictText.Length > 0;
 
+    private List<string> _conflictProcesses = new();
+
     private void CheckConflicts()
     {
         try
         {
-            var running = KnownRgbApps.Where(a => System.Diagnostics.Process.GetProcessesByName(a.process).Length > 0)
-                                      .Select(a => a.name).Distinct().ToList();
-            ConflictText = running.Count == 0 ? "" :
-                $"Läuft gleichzeitig: {string.Join(", ", running)}. Zwei RGB-Programme überschreiben sich gegenseitig – " +
-                "das führt zu Flackern. Bitte dieses Programm beenden (oder im Autostart deaktivieren).";
+            var found = new List<(string proc, string name, string path)>();
+            foreach (var (proc, name) in KnownRgbApps)
+            {
+                if (_cfg.Rgb.IgnoredConflicts.Contains(proc, StringComparer.OrdinalIgnoreCase)) continue;
+                foreach (var p in System.Diagnostics.Process.GetProcessesByName(proc))
+                {
+                    string path = "";
+                    try { path = p.MainModule?.FileName ?? ""; } catch { }
+                    found.Add((proc, name, path));
+                    break;
+                }
+            }
+            _conflictProcesses = found.Select(f => f.proc).ToList();
+            ConflictText = found.Count == 0 ? "" :
+                string.Join("\n", found.Select(f => $"• {f.name} – Prozess „{f.proc}“" + (f.path.Length > 0 ? $"\n   {f.path}" : ""))) +
+                "\n\nOft bleibt nach dem Deinstallieren ein Hintergrund-Dienst übrig. Im Task-Manager unter „Details“ beenden " +
+                "bzw. unter „Dienste“ deaktivieren – oder hier auf „Ignorieren“ klicken, wenn es kein Problem macht.";
         }
         catch { }
+    }
+
+    /// <summary>Die aktuell gemeldeten Programme künftig nicht mehr anzeigen.</summary>
+    public void IgnoreConflicts()
+    {
+        foreach (var p in _conflictProcesses)
+            if (!_cfg.Rgb.IgnoredConflicts.Contains(p, StringComparer.OrdinalIgnoreCase)) _cfg.Rgb.IgnoredConflicts.Add(p);
+        _cfg.Save();
+        ConflictText = "";
     }
 
     // ---- Änderungen

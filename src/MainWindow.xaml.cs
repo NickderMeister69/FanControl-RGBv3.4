@@ -121,6 +121,7 @@ public partial class MainWindow : Window
     // ------------------------------------------------------------------ Beleuchtung
 
     private void Rescan_Click(object sender, RoutedEventArgs e) => _ctl.Rgb.Rescan();
+    private void IgnoreConflict_Click(object sender, RoutedEventArgs e) => _ctl.Rgb.IgnoreConflicts();
     private void Hardware_Click(object sender, RoutedEventArgs e) => _ctl.Rgb.OpenHardwareList();
 
     private void AddColor_Click(object sender, RoutedEventArgs e)

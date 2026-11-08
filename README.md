@@ -40,7 +40,7 @@ Erkennt automatisch:
 Benötigt das .NET 8 SDK:
 
 ```
-cd NickFanControl-Quellcode-v3.6
+cd src
 dotnet publish -c Release -o out
 ```
 

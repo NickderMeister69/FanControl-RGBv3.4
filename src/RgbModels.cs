@@ -60,6 +60,8 @@ public sealed class RgbConfig
         Fade = true
     };
     public Dictionary<string, LightZoneConfig> Zones { get; set; } = new();
+    /// <summary>Prozesse, deren Warnung der Nutzer ausgeblendet hat.</summary>
+    public List<string> IgnoredConflicts { get; set; } = new();
 }
 
 // ======================================================================= Laufzeit (unveränderlich, für den Effekt-Thread)

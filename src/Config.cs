@@ -83,6 +83,7 @@ public sealed class AppConfig
                     cfg.Rgb ??= new();
                     cfg.Rgb.Zones ??= new();
                     cfg.Rgb.Global ??= new();
+                    cfg.Rgb.IgnoredConflicts ??= new();
                     return cfg;
                 }
             }

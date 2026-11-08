@@ -204,7 +204,7 @@ public sealed class FanController : ObservableObject, IDisposable
     private bool _showWelcome;
     public bool ShowWelcome { get => _showWelcome; private set => Set(ref _showWelcome, value); }
 
-    public string Version => "v3.7";
+    public string Version => "v3.7.1";
 
     // ------------------------------------------------------------------ Start / Ende
 
