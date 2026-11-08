@@ -625,6 +625,13 @@
                                 <TextBlock Text="{Binding StatusText}" Margin="8,0,0,0" FontWeight="SemiBold" TextWrapping="Wrap"/>
                             </StackPanel>
 
+                            <Border Background="#2A1F12" BorderBrush="#5C4013" BorderThickness="1" CornerRadius="10" Padding="12,10" Margin="0,10,0,0"
+                                    Visibility="{Binding HasConflict, Converter={StaticResource BoolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Text="Anderes RGB-Programm aktiv" FontWeight="SemiBold" Foreground="#FBBF24"/>
+                                    <TextBlock Text="{Binding ConflictText}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
                             <ItemsControl ItemsSource="{Binding Zones}" Margin="0,10,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type local:LightZoneVM}">

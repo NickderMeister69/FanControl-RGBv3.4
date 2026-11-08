@@ -9,6 +9,7 @@ public sealed class CorsairLightingNodeDevice : RgbDevice
 {
     private readonly HidDevice _hid;
     public override int MinIntervalMs => 40;
+    public override double KeepAliveSeconds => 3; // fällt nach 5 s ohne Befehl in den Hardware-Modus
 
     public CorsairLightingNodeDevice(HidDevice hid, string name, int channels)
     {
@@ -74,6 +75,7 @@ public sealed class CorsairCommanderCoreDevice : RgbDevice
     private int _packet;
     private bool _externalSet;
     public override int MinIntervalMs => 50;
+    public override double KeepAliveSeconds => 6; // braucht alle 10 s ein Lebenszeichen
 
     public CorsairCommanderCoreDevice(HidDevice hid, bool xt)
     {

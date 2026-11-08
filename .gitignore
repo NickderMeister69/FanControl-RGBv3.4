@@ -1,0 +1,11 @@
+# Build-Ausgaben
+bin/
+obj/
+out/
+*.user
+.vs/
+
+# Von der App erzeugte Diagnose-Dateien
+hardware.txt
+sensoren.txt
+log.txt

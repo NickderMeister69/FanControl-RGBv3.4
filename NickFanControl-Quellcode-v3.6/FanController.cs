@@ -192,7 +192,7 @@ public sealed class FanController : ObservableObject, IDisposable
     private bool _showWelcome;
     public bool ShowWelcome { get => _showWelcome; private set => Set(ref _showWelcome, value); }
 
-    public string Version => "v3.6";
+    public string Version => "v3.6.2";
 
     // ------------------------------------------------------------------ Start / Ende
 
@@ -261,6 +261,7 @@ public sealed class FanController : ObservableObject, IDisposable
 
     public void RestoreAll(string why)
     {
+        _mgr.ShuttingDown = true;
         try { _mgr.RestoreAll(); Log.Write("Lüfter an BIOS zurückgegeben: " + why); } catch { }
     }
 

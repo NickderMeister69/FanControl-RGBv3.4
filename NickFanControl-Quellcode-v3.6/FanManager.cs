@@ -96,6 +96,12 @@ public sealed class FanManager : IDisposable
     /// <summary>Schützt den Hardware-Zugriff (Sensoren lesen läuft im Hintergrund, Lüfter setzen im UI-Thread).</summary>
     public readonly object HwLock = new();
 
+    /// <summary>
+    /// true beim Herunterfahren/Neustart: dann NICHT erst auf 100 % stellen – sonst bleibt der Chip
+    /// bei einem Neustart auf 100 % stehen und die Lüfter laufen bis Windows auf Vollgas.
+    /// </summary>
+    public bool ShuttingDown { get; set; }
+
     public void UpdateAll()
     {
         if (!Opened) return;
@@ -234,7 +240,7 @@ public sealed class FanManager : IDisposable
     {
         // Sicherheitsnetz: Manche Mainboards (z. B. Gigabyte mit ITE-Chip) übernehmen die Rückgabe ans BIOS
         // nicht zuverlässig. Deshalb erst auf 100 % – klappt die Rückgabe nicht, läuft der Lüfter wenigstens voll.
-        if (ch.SoftwareActive)
+        if (ch.SoftwareActive && !ShuttingDown)
         {
             try { lock (HwLock) ch.Control.Control!.SetSoftware(100); } catch { }
         }

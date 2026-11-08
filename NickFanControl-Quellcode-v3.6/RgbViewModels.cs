@@ -393,6 +393,9 @@ public sealed class RgbController : ObservableObject, IDisposable
         _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); _cfg.Save(); };
         _preview.Tick += (_, _) => UpdatePreview();
         _preview.Start();
+        _conflictTimer.Tick += (_, _) => CheckConflicts();
+        _conflictTimer.Start();
+        CheckConflicts();
         Push();
     }
 
@@ -442,6 +445,37 @@ public sealed class RgbController : ObservableObject, IDisposable
 
     public bool HasZones => Zones.Count > 0;
     public bool NoZones => Zones.Count == 0;
+
+    // ---- Andere RGB-Programme erkennen (häufigste Ursache für Flackern)
+    private readonly DispatcherTimer _conflictTimer = new() { Interval = TimeSpan.FromSeconds(15) };
+    private static readonly (string process, string name)[] KnownRgbApps =
+    {
+        ("ArmouryCrate", "ASUS Armoury Crate"), ("ArmouryCrate.Service", "ASUS Armoury Crate"), ("LightingService", "ASUS Aura"),
+        ("AuraService", "ASUS Aura"), ("MSI.CentralServer", "MSI Center"), ("MSI_Center", "MSI Center"), ("MysticLight", "MSI Mystic Light"),
+        ("LEDKeeper2", "MSI Mystic Light"), ("RGBFusion", "Gigabyte RGB Fusion"), ("GCC", "Gigabyte Control Center"),
+        ("GigabyteUpdateService", "Gigabyte Control Center"), ("iCUE", "Corsair iCUE"), ("Corsair.Service", "Corsair iCUE"),
+        ("RazerCentralService", "Razer Synapse"), ("Razer Synapse 3", "Razer Synapse"), ("RazerAppEngine", "Razer Synapse"),
+        ("SignalRgb", "SignalRGB"), ("SignalRgbLauncher", "SignalRGB"), ("OpenRGB", "OpenRGB"), ("NZXT CAM", "NZXT CAM"),
+        ("L-Connect 3", "Lian Li L-Connect"), ("L-Connect", "Lian Li L-Connect"), ("PolychromeRGB", "ASRock Polychrome"),
+        ("lghub", "Logitech G Hub"), ("SteelSeriesGG", "SteelSeries GG"), ("FanControl", "FanControl (Rem0o)")
+    };
+
+    private string _conflictText = "";
+    public string ConflictText { get => _conflictText; private set { if (Set(ref _conflictText, value)) Raise(nameof(HasConflict)); } }
+    public bool HasConflict => _conflictText.Length > 0;
+
+    private void CheckConflicts()
+    {
+        try
+        {
+            var running = KnownRgbApps.Where(a => System.Diagnostics.Process.GetProcessesByName(a.process).Length > 0)
+                                      .Select(a => a.name).Distinct().ToList();
+            ConflictText = running.Count == 0 ? "" :
+                $"Läuft gleichzeitig: {string.Join(", ", running)}. Zwei RGB-Programme überschreiben sich gegenseitig – " +
+                "das führt zu Flackern. Bitte dieses Programm beenden (oder im Autostart deaktivieren).";
+        }
+        catch { }
+    }
 
     // ---- Änderungen
     public void Changed()

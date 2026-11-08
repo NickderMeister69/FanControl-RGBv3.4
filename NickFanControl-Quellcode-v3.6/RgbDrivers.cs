@@ -32,6 +32,11 @@ public abstract class RgbDevice : IDisposable
     public List<RgbZone> Zones { get; } = new();
     /// <summary>Kleinster Abstand zwischen zwei Updates (manche Controller sind langsam).</summary>
     public virtual int MinIntervalMs => 33;
+    /// <summary>
+    /// Nur Geräte, die ohne regelmäßige Befehle zurück in ihren eigenen Modus fallen, brauchen ein
+    /// "Wach-halten". Alle anderen bekommen nur bei Farbänderung neue Daten – sonst flackern manche Boards.
+    /// </summary>
+    public virtual double KeepAliveSeconds => 0;
     public DateTime LastUpdate;
 
     /// <summary>Gerät für Software-Steuerung vorbereiten (Direct-Modus).</summary>

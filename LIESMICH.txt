@@ -1,0 +1,46 @@
+NICK FAN CONTROL v3.6.2
+=====================
+
+EINMALIG VORHER
+1. PawnIO-Treiber installieren: https://pawnio.eu  (nur für die Lüfter-DREHZAHL nötig)
+2. Andere Lüfter-/RGB-Programme schließen oder deinstallieren
+   (Armoury Crate, MSI Center, RGB Fusion, iCUE, Razer Synapse …).
+3. Die exe in diesem Ordner lassen – der Autostart startet sie von hier.
+
+START
+- Doppelklick, Admin-Abfrage bestätigen → Fenster öffnet sich normal.
+- Schalter "Mit Windows starten" oben rechts: dann startet sie nach dem Anmelden
+  automatisch nur als Symbol unten rechts.
+
+WICHTIG BEIM ERSTEN START
+- Heißen die Lüfter nur "Fan #1, #2 …", stehen erst alle auf "BIOS". Einmal zuordnen:
+  CPU-Lüfter (meist Fan #1) → BIOS, Gehäuselüfter → Minimum, Pumpe → Pumpe. Dann "Fertig" klicken.
+- Ab 70 °C (einstellbar: "Alle Lüfter schneller ab") drehen Minimum-Lüfter stufenlos schneller, an der Sicherheitsgrenze alle auf 100 %.
+
+SEITE "LÜFTER"
+- Minimum : leiseste Stufe, bei der der Lüfter noch dreht (automatisch kalibriert, + 5 %)
+- Manuell : feste Leistung in Prozent, mit dem Regler einstellen
+- Temperatur: die App regelt nach der CPU-Temperatur ("Leise bis" … "Voll ab") – ideal für den CPU-Lüfter
+- Pumpe   : Wasserkühlungs-Pumpe, fest 30 %
+- BIOS    : Mainboard regelt selbst – für den CPU-Lüfter
+- Name anklicken = umbenennen.
+
+SEITE "BELEUCHTUNG" (RGB) – alles in der App, kein Zusatzprogramm
+- Erkennt automatisch:
+    * Mainboards: ASUS Aura, MSI Mystic Light (alle Generationen inkl. X870/B850/Z890),
+      Gigabyte RGB Fusion 2, ASRock Polychrome
+    * Lüfter-Hubs: Corsair Lighting Node Core/Pro, Commander Pro, Commander Core/Core XT,
+      Lian Li Uni Hub SL / AL / SL V2 / AL V2 / SL Infinity, NZXT Hue 2 / RGB & Fan Controller /
+      Smart Device V2 / Kraken X3 & Elite
+    * Razer: Tastaturen (Einzel-LED, Welle über die Tasten), Mäuse, Mauspads, Kraken-Headsets,
+      Chroma ARGB-Controller (6 Lüfter-Kanäle) u. v. m. – alles ohne Synapse
+- Effekte: Statisch, Diashow, Regenbogen, Atmen, Bildschirm (reaktiv), Aus – mit Helligkeitsregler
+- Alle Lüfter und Geräte leuchten gleich (synchron). Einzelne Anschlüsse lassen sich nur an/aus schalten.
+- Flackert die Beleuchtung? Fast immer läuft ein zweites RGB-Programm mit (Armoury Crate, iCUE, Synapse,
+  Mystic Light, RGB Fusion, SignalRGB …). Die App zeigt das unter "Geräte" an – dieses Programm beenden.
+- Bildschirm-Modus (wie SignalRGB): nimmt die prägende Farbe des Bildes, dunkle Szenen bleiben dunkel.
+  Unter "Geräte" kann jeder Anschluss einen eigenen Bildschirmbereich bekommen (links, rechts, oben, unten, Mitte).
+  Liest den Bildschirm über die Grafikkarte – klappt auch bei den meisten Vollbild-Spielen.
+- Nicht erkannt? "Hardware-Liste" öffnen (hardware.txt) – damit kann weitere Hardware nachgerüstet werden.
+
+Einstellungen & Log: %AppData%\NickFanControl

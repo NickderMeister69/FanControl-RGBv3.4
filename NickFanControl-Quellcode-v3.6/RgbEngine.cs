@@ -208,7 +208,8 @@ public sealed class RgbEngine : IDisposable
 
                     bool changed = z.LastSent == null || !buf.AsSpan().SequenceEqual(z.LastSent);
                     // Regelmäßig erneut senden, damit andere Programme die Farben nicht übernehmen
-                    if (changed || (now - z.LastSendTime).TotalSeconds > 1.0)
+                    bool keepAlive = dev.KeepAliveSeconds > 0 && (now - z.LastSendTime).TotalSeconds > dev.KeepAliveSeconds;
+                    if (changed || keepAlive)
                     {
                         dev.SetZone(z.Target, buf);
                         z.LastSent = buf;
